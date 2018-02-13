@@ -1,19 +1,16 @@
 <template>
   <div id="app">
-    <h1 class="color-main">aaaaa</h1>
-    <router-view/>
+    <m-header></m-header>
   </div>
 </template>
 
 <script>
-import { getDiscList } from 'api/recommend.js'
+import MHeader from 'components/m-header/m-header'
+
 export default {
   name: 'App',
-  created () {
-    getDiscList()
-      .then(res => {
-        console.log(res)
-      })
+  components: {
+    MHeader
   }
 }
 </script>
