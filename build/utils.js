@@ -54,6 +54,18 @@ exports.cssLoaders = function (options) {
     }
   }
 
+  // vue-loader加载一个全局设置文件，即为每个组件加载全局的stylus变量和mixins
+  const stylusOptions = {
+    import: [
+      path.join(__dirname, '../src/common/stylus/variable.styl'),
+      path.join(__dirname, '../src/common/stylus/mixin.styl')
+    ],
+    paths: [
+      path.join(__dirname, '../src/common/stylus'),
+      path.join(__dirname, '../'),
+    ]
+  }
+
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
   return {
     css: generateLoaders(),
@@ -61,8 +73,8 @@ exports.cssLoaders = function (options) {
     less: generateLoaders('less'),
     sass: generateLoaders('sass', { indentedSyntax: true }),
     scss: generateLoaders('sass'),
-    stylus: generateLoaders('stylus'),
-    styl: generateLoaders('stylus')
+    stylus: generateLoaders('stylus', stylusOptions),
+    styl: generateLoaders('stylus', stylusOptions)
   }
 }
 
