@@ -29,7 +29,7 @@ export default {
     },
     interval: {
       type: Number,
-      default: 3000
+      default: 2000
     }
   },
   data () {
@@ -54,6 +54,27 @@ export default {
       this._setslideWidth(true)
       this.slide.refresh()
     })
+  },
+  activated () {
+    console.log('activated')
+    if (!this.slide) { return }
+    this.slide.enable()
+    const pageIndex = this.slide.getCurrentPage().pageX
+    this.slide.goToPage(pageIndex, 0, 0)
+    this.currentPageIndex = pageIndex
+    if (this.autoPlay) {
+      this._play()
+    }
+  },
+  deactivated () {
+    console.log('deactivated')
+    this.slide.disable()
+    clearTimeout(this.timer)
+  },
+  beforeDestroy () {
+    console.log('beforeDestroy')
+    this.slide.disable()
+    clearTimeout(this.timer)
   },
   methods: {
     _setslideWidth (isResize) {
