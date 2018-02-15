@@ -12,6 +12,3 @@ export default {
 <style lang="stylus">
 
 </style>
-
-
-
