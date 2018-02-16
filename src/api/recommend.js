@@ -16,7 +16,7 @@ export function getRecommend () {
 export function getDiscList () {
   const url = '/api/getDiscList'
 
-  const data = Object.assign({}, commonParams, {
+  const query = Object.assign({}, commonParams, {
     platform: 'yqq',
     hostUin: 0,
     sin: 0,
@@ -29,7 +29,7 @@ export function getDiscList () {
   })
 
   return axios.get(url, {
-    params: data
+    params: query
   }).then((res) => {
     return Promise.resolve(res.data)
   })

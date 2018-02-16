@@ -56,7 +56,6 @@ export default {
     })
   },
   activated () {
-    console.log('activated')
     if (!this.slide) { return }
     this.slide.enable()
     const pageIndex = this.slide.getCurrentPage().pageX
@@ -67,12 +66,10 @@ export default {
     }
   },
   deactivated () {
-    console.log('deactivated')
     this.slide.disable()
     clearTimeout(this.timer)
   },
   beforeDestroy () {
-    console.log('beforeDestroy')
     this.slide.disable()
     clearTimeout(this.timer)
   },
