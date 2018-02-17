@@ -16,7 +16,7 @@
           <ul>
             <li v-for="item in discList" :key="item.dissid" class="item">
               <div class="icon">
-                <img :src="item.imgurl" @load="loadImg" width="60" height="60">
+                <img v-lazy="item.imgurl" @load="loadImg" width="60" height="60">
               </div>
               <div class="text">
                 <h2 class="name" v-html="item.creator.name"></h2>
@@ -49,10 +49,7 @@ export default {
     }
   },
   created () {
-    setTimeout(() => {
-      this._getRecommend()
-    }, 2000)
-    // this._getRecommend()
+    this._getRecommend()
     this._getDiscList()
   },
   methods: {
