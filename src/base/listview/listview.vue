@@ -80,7 +80,7 @@ export default {
       for (let i = 0; i < listHeight.length - 1; i++) {
         let height1 = listHeight[i]
         let heigth2 = listHeight[i + 1]
-        if (-newY >= height1 && -newY <= heigth2) {
+        if (-newY >= height1 && -newY < heigth2) {
           this.currentIndex = i
           return
         }
@@ -114,10 +114,10 @@ export default {
     },
     scroll (pos) {
       this.scrollY = pos.y
-      console.log(this.scrollY)
     },
     _scrollTo (index) {
       if (index >= 0 && index <= this.shortcutList.length) {
+        this.scrollY = -this.listHeight[index]
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index])
       }
     },
