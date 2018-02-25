@@ -3,7 +3,7 @@
     <m-header></m-header>
     <tab></tab>
     <keep-alive>
-      <router-view></router-view>
+      <router-view style="z-index: -1"></router-view>
     </keep-alive>
   </div>
 </template>
@@ -22,8 +22,4 @@ export default {
 </script>
 
 <style lang="stylus">
-#app
-  .color-main
-    color: $color-theme
-    extend-click()
 </style>

@@ -32,13 +32,23 @@
         </li>
       </ul>
     </div>
+    <!-- fixed title -->
+    <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+      <div class="fixed-title">{{ fixedTitle }}</div>
+    </div>
+    <!-- loading -->
+    <div class="loading-wrapper" v-show="!data.length">
+      <loading></loading>
+    </div>
   </scroll>
 </template>
 
 <script>
 import Scroll from 'base/scroll/scroll'
+import Loading from 'base/loading/loading'
 
 const ANCHOR_HEIGHT = 18
+const TITLE_HEIGHT = 30
 
 export default {
   props: {
@@ -48,19 +58,28 @@ export default {
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Loading
   },
   data () {
     return {
       scrollY: -1,
-      currentIndex: 0
+      currentIndex: 0,
+      diff: -1
     }
   },
+
   computed: {
     shortcutList () {
       return this.data.map(item => {
         return item.title.substr(0, 1)
       })
+    },
+    fixedTitle () {
+      if (!this.data[this.currentIndex] || this.scrollY >= 0) {
+        return ''
+      }
+      return this.data[this.currentIndex].title
     }
   },
   watch: {
@@ -71,22 +90,32 @@ export default {
     },
     scrollY (newY) {
       const listHeight = this.listHeight
-      // 当滚动到顶部, newY > 0
+      // 1. 顶部bounce, newY > 0
       if (newY > 0) {
         this.currentIndex = 0
         return
       }
-      // 在中间部分滚动
+      // 2. 正常滚动
       for (let i = 0; i < listHeight.length - 1; i++) {
         let height1 = listHeight[i]
         let heigth2 = listHeight[i + 1]
         if (-newY >= height1 && -newY < heigth2) {
           this.currentIndex = i
+          this.diff = heigth2 + newY
           return
         }
       }
-      // 滚动到底部
+      // 3. 底部bounce, 且-newY大于最后一个元素的上限(最大的高度)
       this.currentIndex = listHeight.length - 2
+    },
+    diff (newVal) {
+      const fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
+      // diff是一个实时变化的值, 如果fixedTop没有变化那就不要去修改dom了
+      if (this.fixedTop === fixedTop) {
+        return
+      }
+      this.fixedTop = fixedTop
+      this.$refs.fixed.style.transform = `translate3d(0, ${fixedTop}px, 0)`
     }
   },
   created () {
@@ -181,4 +210,21 @@ export default {
       font-size: $font-size-small
       &.current
           color: $color-theme
+  .list-fixed
+      position: absolute
+      top: 0
+      left: 0
+      width: 100%
+      .fixed-title
+        height: 30px
+        line-height: 30px
+        padding-left: 20px
+        font-size: $font-size-small
+        color: $color-text-l
+        background: $color-highlight-background
+  .loading-wrapper
+    position: absolute
+    width: 100%
+    top: 50%
+    transform: translateY(-50%)
 </style>

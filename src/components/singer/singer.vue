@@ -23,7 +23,10 @@ export default {
     }
   },
   created () {
-    this._getSingerList()
+    setTimeout(() => {
+      this._getSingerList()
+    }, 3000)
+    // this._getSingerList()
   },
   methods: {
     _getSingerList () {
