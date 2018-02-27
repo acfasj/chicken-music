@@ -11,7 +11,7 @@
       <li v-for="(group, groupIdx) in data" :key="groupIdx" ref="listGroup" class="list-group">
         <h2 class="list-group-title">{{ group.title }}</h2>
         <ul>
-          <li v-for="item in group.items" :key="item.id" class="list-group-item">
+          <li v-for="item in group.items" :key="item.id" class="list-group-item" @click="selectItem(item)">
             <img v-lazy="item.avatar" class="avatar">
             <span class="name">{{ item.name }}</span>
           </li>
@@ -126,6 +126,9 @@ export default {
     this.probeType = 3
   },
   methods: {
+    selectItem (item) {
+      this.$emit('select', item)
+    },
     onShortcutTouchStart (e) {
       // 因为从dataset取到, 为字符串, 所以需要转换为数字
       let anchorIndex = +e.target.dataset.index
@@ -171,6 +174,7 @@ export default {
   height: 100%
   overflow: hidden
   background-color: $color-background
+  position relative
   .list-group
     padding-bottom: 30px
     .list-group-title

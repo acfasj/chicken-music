@@ -17,7 +17,13 @@ export default new Router({
     // 歌手
     {
       path: '/singer',
-      component: () => import('components/singer/singer')
+      component: () => import('components/singer/singer'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('components/singer-detail/singer-detail')
+        }
+      ]
     },
     // 排行
     {
