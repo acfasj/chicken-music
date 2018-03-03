@@ -10,6 +10,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
 const axios = require('axios')
+const bodyParser = require('body-parser')
 
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
@@ -24,6 +25,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   // these devServer options should be customized in /config/index.js
   devServer: {
     before(app) {
+      app.use(bodyParser.urlencoded({ extended: true }))
+      const querystring = require('querystring')
+
       app.get('/api/getDiscList', function (req, res) {
         var url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
         return axios.get(url, {
@@ -35,6 +39,21 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }).then((response) => {
           res.json(response.data)
         }).catch((e) => {
+          console.log(e)
+        })
+      })
+
+      app.post('/api/getPurlUrl', bodyParser.json(), function (req, res) {
+        const url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        axios.post(url. req.body, {
+          headers: {
+            referer: 'https://y.qq.com',
+            origin: 'https://y.qq.com',
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
+        }).then(response => {
+          res.json(response.data)
+        }).catch(e => {
           console.log(e)
         })
       })
