@@ -197,6 +197,7 @@ export default {
         color: $color-text-l
         font-size: $font-size-medium
   .list-shortcut
+    z-index: 1
     position: absolute
     right: 0
     top: 50%
