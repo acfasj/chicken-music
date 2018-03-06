@@ -25,7 +25,7 @@
         <div class="middle">
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd">
+              <div class="cd" :class="cdCls">
                 <img class="image" :src="currentSong.image">
               </div>
             </div>
@@ -37,14 +37,14 @@
             <div class="icon icon-left">
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon icon-left">
-              <i class="icon-prev"></i>
+            <div class="icon icon-left" :class="disableCls">
+              <i class="icon-prev" @click="prev"></i>
             </div>
-            <div class="icon icon-center">
-              <i class="icon-play"></i>
+            <div class="icon icon-center" :class="disableCls">
+              <i :class="playIcon" @click="togglePlaying"></i>
             </div>
-            <div class="icon icon-right">
-              <i class="icon-next"></i>
+            <div class="icon icon-right" :class="disableCls">
+              <i class="icon-next" @click="next"></i>
             </div>
             <div class="icon icon-right">
               <i class="icon icon-not-favorite"></i>
@@ -57,17 +57,21 @@
       <!-- 底部的迷你播放器 -->
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img width="40" height="40" :src="currentSong.image">
+          <img width="40" height="40" :src="currentSong.image" :class="cdCls">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
+          <i :class="miniIcon" @click.stop="togglePlaying"></i>
+        </div>
+        <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error"></audio>
   </div>
 </template>
 
@@ -79,12 +83,44 @@ import { prefixStyle } from 'common/js/dom'
 const transform = prefixStyle('transform')
 
 export default {
+  data () {
+    return {
+      songReady: false
+    }
+  },
   computed: {
+    playIcon () {
+      return this.playing ? 'icon-pause' : 'icon-play'
+    },
+    miniIcon () {
+      return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+    },
+    cdCls () {
+      return this.playing ? 'play' : 'play pause'
+    },
+    disableCls () {
+      return this.songReady ? '' : 'disable'
+    },
     ...mapGetters([
       'fullScreen',
       'playlist',
-      'currentSong'
+      'currentSong',
+      'playing',
+      'currentIndex'
     ])
+  },
+  watch: {
+    currentSong () {
+      this.$nextTick(() => {
+        this.$refs.audio.play()
+      })
+    },
+    playing (newPlaying) {
+      const audio = this.$refs.audio
+      this.$nextTick(() => {
+        newPlaying ? audio.play() : audio.pause()
+      })
+    }
   },
   methods: {
     back () {
@@ -92,6 +128,47 @@ export default {
     },
     open () {
       this.setFullScreen(true)
+    },
+    ready () {
+      this.songReady = true
+    },
+    error () {
+      // 发生错误的时候也将songReady置为true, 以便用户还能进行后续的操作
+      this.songReady = true
+    },
+    togglePlaying () {
+      if (!this.songReady) {
+        return
+      }
+      this.setPlayingState(!this.playing)
+    },
+    prev () {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex - 1
+      if (index === -1) {
+        index = this.playlist.length - 1
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    next () {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex + 1
+      if (index === length) {
+        index = 0
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
     },
     enter (el, done) {
       const { x, y, scale } = this._getPosAndScale()
@@ -153,7 +230,9 @@ export default {
       }
     },
     ...mapMutations({
-      setFullScreen: 'SET_FULLSCREEN'
+      setFullScreen: 'SET_FULLSCREEN',
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
     })
   }
 }
@@ -227,6 +306,11 @@ export default {
           .cd
             width: 100%
             height: 100%
+            // 歌曲图片旋转
+            &.play
+              animation rotate 20s linear infinite
+            &.pause
+              animation-play-state paused
             .image
               position: absolute
               left: 0
@@ -246,6 +330,8 @@ export default {
         .icon
           flex: 1
           color: $color-theme
+          &.disable
+            color: $color-theme-d
           i
             font-size: 30px
         .icon-left
@@ -289,6 +375,10 @@ export default {
       padding: 0 10px 0 20px
       img
         border-radius: 50%
+        &.play
+          animation: rotate 10s linear infinite
+        &.pause
+          animation-play-state: paused
     .text
       display: flex
       flex-direction: column
@@ -309,7 +399,13 @@ export default {
       flex: 0 0 30px
       width: 30px
       padding: 0 10px
-      .icon-playlist
+      .icon-playlist, .icon-play-mini, .icon-pause-mini
         font-size: 30px
         color: $color-theme-d
+// 旋转动画
+@keyframes rotate
+  0%
+    transform: rotate(0)
+  100%
+    transform: rotate(360deg)
 </style>
