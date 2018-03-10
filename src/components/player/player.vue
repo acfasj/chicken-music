@@ -71,7 +71,9 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i :class="miniIcon" @click.stop="togglePlaying"></i>
+          <progress-circle :radius="32" :percent="percent">
+            <i :class="miniIcon" class="icon-mini" @click.stop="togglePlaying"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -87,12 +89,14 @@ import { mapGetters, mapMutations } from 'vuex'
 import animations from 'create-keyframe-animation'
 import { prefixStyle } from 'common/js/dom'
 import ProgressBar from 'base/progress-bar/progress-bar'
+import ProgressCircle from 'base/progress-circle/progress-circle'
 
 const transform = prefixStyle('transform')
 
 export default {
   components: {
-    ProgressBar
+    ProgressBar,
+    ProgressCircle
   },
   data () {
     return {
@@ -461,6 +465,11 @@ export default {
       .icon-playlist, .icon-play-mini, .icon-pause-mini
         font-size: 30px
         color: $color-theme-d
+      .icon-mini
+        font-size: 32px
+        position: absolute
+        left: 0
+        top: 0
 // 旋转动画
 @keyframes rotate
   0%
