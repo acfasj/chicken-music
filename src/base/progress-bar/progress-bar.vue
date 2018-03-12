@@ -60,7 +60,12 @@ export default {
       this._triggerPercent()
     },
     progressClick (e) {
-      this._offset(e.offsetX)
+      // 为什么用e.offsetX不行, 因为当点击progressBtn时, progressBtn是target
+      // 而offsetX的定义是 The offsetX read-only property of the MouseEvent interface provides the offset
+      // in the X coordinate of the mouse pointer between that event and the padding edge of the target node.
+      const rect = this.$refs.progressBar.getBoundingClientRect()
+      const offsetWidth = e.pageX - rect.left
+      this._offset(offsetWidth)
       this._triggerPercent()
     },
     _offset (offsetWidth) {

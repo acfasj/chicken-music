@@ -41,8 +41,8 @@
             <span class="time time-r">{{ format(currentSong.duration) }}</span>
           </div>
           <div class="operators">
-            <div class="icon icon-left">
-              <i class="icon-sequence"></i>
+            <div class="icon icon-left" @click="changeMode">
+              <i :class="modeIcon"></i>
             </div>
             <div class="icon icon-left" :class="disableCls">
               <i class="icon-prev" @click="prev"></i>
@@ -80,7 +80,14 @@
         </div>
       </div>
     </transition>
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio
+      ref="audio"
+      :src="currentSong.url"
+      @canplay="ready"
+      @error="error"
+      @timeupdate="updateTime"
+      @ended="ended"
+    ></audio>
   </div>
 </template>
 
@@ -90,6 +97,8 @@ import animations from 'create-keyframe-animation'
 import { prefixStyle } from 'common/js/dom'
 import ProgressBar from 'base/progress-bar/progress-bar'
 import ProgressCircle from 'base/progress-circle/progress-circle'
+import { playMode } from 'common/js/config'
+import { shuffle } from 'common/js/util'
 
 const transform = prefixStyle('transform')
 
@@ -111,6 +120,14 @@ export default {
     miniIcon () {
       return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
     },
+    modeIcon () {
+      switch (this.mode) {
+        case playMode.random: return 'icon-random'
+        case playMode.loop: return 'icon-loop'
+        case playMode.sequence:
+        default: return 'icon-sequence'
+      }
+    },
     cdCls () {
       return this.playing ? 'play' : 'play pause'
     },
@@ -125,11 +142,16 @@ export default {
       'playlist',
       'currentSong',
       'playing',
-      'currentIndex'
+      'currentIndex',
+      'mode',
+      'sequenceList'
     ])
   },
   watch: {
-    currentSong () {
+    currentSong (newSong, oldSong) {
+      if (newSong.id === oldSong.id) {
+        return
+      }
       this.$nextTick(() => {
         this.$refs.audio.play()
       })
@@ -192,6 +214,17 @@ export default {
     updateTime (e) {
       this.currentTime = e.target.currentTime
     },
+    ended () {
+      if (this.mode === playMode.loop) {
+        this.loop()
+      } else {
+        this.next()
+      }
+    },
+    loop () {
+      this.$refs.audio.currentTime = 0
+      this.$refs.audio.play()
+    },
     format (interval) {
       interval = interval | 0 // 正数向下取整, 相当于Math.floor
       const minute = interval / 60 | 0
@@ -205,6 +238,24 @@ export default {
       if (!this.playing) {
         this.togglePlaying()
       }
+    },
+    changeMode () {
+      const mode = (this.mode + 1) % 3
+      this.setPlayMode(mode)
+      let list = null
+      if (this.mode === playMode.random) {
+        list = shuffle(this.sequenceList)
+      } else {
+        list = this.sequenceList
+      }
+      // currentSong是根据playlist和currentIndex计算出来的, 所以playlist和currentIndex要一起变
+      // 并且, resetCurrentIndex要在前面. 因为findIndex是根据currentSong来的, 若playlist先改变. 则currentSong也改变了
+      this.resetCurrentIndex(list)
+      this.setPlaylist(list)
+    },
+    resetCurrentIndex (list) {
+      const index = list.findIndex(item => item.id === this.currentSong.id)
+      this.setCurrentIndex(index)
     },
     _pad (num, n = 2) {
       let len = num.toString().length
@@ -277,7 +328,9 @@ export default {
     ...mapMutations({
       setFullScreen: 'SET_FULLSCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX'
+      setCurrentIndex: 'SET_CURRENT_INDEX',
+      setPlayMode: 'SET_PLAY_MODE',
+      setPlaylist: 'SET_PLAYLIST'
     })
   }
 }
