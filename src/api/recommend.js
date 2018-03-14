@@ -14,7 +14,7 @@ export function getRecommend () {
 }
 
 export function getDiscList () {
-  const url = '/api/getDiscList'
+  const url = process.env.BASE_URL + '/api/getDiscList'
 
   const query = Object.assign({}, commonParams, {
     platform: 'yqq',
