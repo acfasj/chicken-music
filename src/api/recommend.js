@@ -16,7 +16,7 @@ export function getRecommend () {
 export function getDiscList () {
   const url = process.env.BASE_URL + '/api/getDiscList'
 
-  const query = Object.assign({}, commonParams, {
+  const queryObj = Object.assign({}, commonParams, {
     platform: 'yqq',
     hostUin: 0,
     sin: 0,
@@ -29,7 +29,28 @@ export function getDiscList () {
   })
 
   return axios.get(url, {
-    params: query
+    params: queryObj
+  }).then((res) => {
+    return Promise.resolve(res.data)
+  })
+}
+
+export function getSongList (disstid) {
+  const url = process.env.BASE_URL + '/api/getCdInfo'
+
+  const queryObj = Object.assign({}, commonParams, {
+    disstid,
+    type: 1,
+    json: 1,
+    utf8: 1,
+    onlysong: 0,
+    platform: 'yqq',
+    hostUin: 0,
+    needNewCode: 0
+  })
+
+  return axios.get(url, {
+    params: queryObj
   }).then((res) => {
     return Promise.resolve(res.data)
   })

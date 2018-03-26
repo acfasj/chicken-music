@@ -12,7 +12,13 @@ export default new Router({
     // 推荐
     {
       path: '/recommend',
-      component: () => import('components/recommend/recommend')
+      component: () => import('components/recommend/recommend'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('components/disc/disc')
+        }
+      ]
     },
     // 歌手
     {
