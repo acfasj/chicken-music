@@ -34,7 +34,13 @@ export default new Router({
     // 排行
     {
       path: '/rank',
-      component: () => import('components/rank/rank')
+      component: () => import('components/rank/rank'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('components/top-list/top-list')
+        }
+      ]
     },
     // 搜索
     {

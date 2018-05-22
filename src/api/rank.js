@@ -12,3 +12,17 @@ export function getTopList () {
 
   return jsonp(url, queryObj, options)
 }
+
+export function getMusicList (topid) {
+  const url = 'https://shc.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg'
+  const queryObj = {
+    ...commonParams,
+    topid,
+    page: 'detail',
+    type: 'top',
+    tpl: 3,
+    platform: 'h5'
+  }
+
+  return jsonp(url, queryObj, options)
+}
