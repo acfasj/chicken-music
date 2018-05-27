@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <div v-show="query" class="sugget-resilt">
+    <div v-show="query" class="sugget-result">
       <suggest :query="query"></suggest>
     </div>
   </div>
@@ -54,7 +54,6 @@ export default {
       getHotKey()
         .then(res => {
           if (res.code === ERR_OK) {
-            console.log(res)
             this.hotKey = res.data.hotkey.slice(0, 10)
           }
         })
@@ -67,11 +66,12 @@ export default {
 .search
   .search-box-wrapper
     margin: 20px
-  .shortcut-wrapper
+  .shortcut-wrapper, .sugget-result
     position: fixed
     top: 178px
     bottom: 0
     width: 100%
+  .shortcut-wrapper
     .shortcut
       height: 100%
       overflow: hidden

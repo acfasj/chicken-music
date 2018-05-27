@@ -1,5 +1,5 @@
 <template>
-  <div class="suggest">
+  <scroll class="suggest" :data="result" :pullup="pullup" @scrollToEnd="searchMore" ref="scroll">
     <ul class="suggest-list">
       <li class="suggest-item" v-for="(item, index) in result" :key="index">
         <div class="icon">
@@ -9,18 +9,26 @@
           <p class="text" v-html="getDisplayName(item)"></p>
         </div>
       </li>
+      <loading v-show="hasMore" title=""></loading>
     </ul>
-  </div>
+  </scroll>
 </template>
 
 <script>
 import { search } from 'api/search'
 import { ERR_OK } from 'api/config'
-import { filterSinger } from 'common/js/song'
+import { isValidMusic, createSong } from 'common/js/song'
+import Scroll from 'base/scroll/scroll'
+import Loading from 'base/loading/loading'
 
 const TYPE_SINGER = 'singer'
+const PERPAGE = 20
 
 export default {
+  components: {
+    Scroll,
+    Loading
+  },
   props: {
     query: {
       type: String,
@@ -34,7 +42,9 @@ export default {
   data () {
     return {
       page: 1,
-      result: []
+      result: [],
+      pullup: true,
+      hasMore: true
     }
   },
   watch: {
@@ -44,17 +54,35 @@ export default {
   },
   methods: {
     search () {
-      search(this.query, this.page, this.showSinger)
+      this.hasMore = true
+      this.page = 1
+      this.$refs.scroll.scrollTo(0, 0)
+      this.getSearchData(true)
+    },
+    searchMore () {
+      if (!this.hasMore) {
+        return
+      }
+      this.page++
+      this.getSearchData()
+    },
+    getSearchData (firstSearch = false) {
+      search(this.query, this.page, this.showSinger, PERPAGE)
         .then(res => {
           if (res.code === ERR_OK) {
-            console.log(res)
-            this.result = this._genResult(res.data)
+            if (firstSearch) {
+              this.result = this._genResult(res.data)
+            } else {
+              // concat后重新赋值, scroll的data才会改变, 才会watch到然后重新计算高度
+              this.result = this.result.concat(this._genResult(res.data))
+            }
+            this._checkMore(res.data.song)
           }
         })
     },
     getIconCls (item) {
       if (item.type === TYPE_SINGER) {
-        return 'item-mine'
+        return 'icon-mine'
       } else {
         return 'icon-music'
       }
@@ -63,7 +91,12 @@ export default {
       if (item.type === TYPE_SINGER) {
         return item.singername
       } else {
-        return `${item.songname}-${filterSinger(item.singer)}`
+        return `${item.name}-${item.singer}`
+      }
+    },
+    _checkMore (song) {
+      if (!song.list.length || (song.curnum + song.curpage * PERPAGE) >= song.totalnum) {
+        this.hasMore = false
       }
     },
     _genResult (data) {
@@ -75,8 +108,17 @@ export default {
         })
       }
       if (data.song) {
-        ret = ret.concat(data.song.list)
+        ret = ret.concat(this._normalizegSons(data.song.list))
       }
+      return ret
+    },
+    _normalizegSons (list) {
+      let ret = []
+      list.forEach(musicData => {
+        if (isValidMusic(musicData)) {
+          ret.push(createSong(musicData))
+        }
+      })
       return ret
     }
   }
