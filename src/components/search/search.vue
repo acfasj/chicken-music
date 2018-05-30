@@ -20,6 +20,8 @@
     <div v-show="query" class="sugget-result">
       <suggest :query="query"></suggest>
     </div>
+
+    <router-view></router-view>
   </div>
 </template>
 

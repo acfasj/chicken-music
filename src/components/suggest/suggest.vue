@@ -1,7 +1,7 @@
 <template>
   <scroll class="suggest" :data="result" :pullup="pullup" @scrollToEnd="searchMore" ref="scroll">
     <ul class="suggest-list">
-      <li class="suggest-item" v-for="(item, index) in result" :key="index">
+      <li class="suggest-item" @click="selectItem(item)" v-for="(item, index) in result" :key="index">
         <div class="icon">
           <i :class="getIconCls(item)"></i>
         </div>
@@ -17,9 +17,11 @@
 <script>
 import { search } from 'api/search'
 import { ERR_OK } from 'api/config'
-import { isValidMusic, createSong } from 'common/js/song'
+import { isValidMusic, createSong, processSongUrl } from 'common/js/song'
 import Scroll from 'base/scroll/scroll'
 import Loading from 'base/loading/loading'
+import Singer from 'common/js/singer'
+import { mapMutations, mapActions } from 'vuex'
 
 const TYPE_SINGER = 'singer'
 const PERPAGE = 20
@@ -71,14 +73,26 @@ export default {
         .then(res => {
           if (res.code === ERR_OK) {
             if (firstSearch) {
-              this.result = this._genResult(res.data)
+              this._genResult(res.data).then(res => (this.result = res))
             } else {
               // concat后重新赋值, scroll的data才会改变, 才会watch到然后重新计算高度
-              this.result = this.result.concat(this._genResult(res.data))
+              this._genResult(res.data).then(res => (this.result = this.result.concat(res)))
             }
             this._checkMore(res.data.song)
           }
         })
+    },
+    selectItem (item) {
+      if (item.type === TYPE_SINGER) {
+        const singer = new Singer({
+          id: item.singerid,
+          name: item.singername,
+          mid: item.singermid
+        })
+        this.setSinger(singer)
+        return this.$router.push(`/search/${singer.id}`)
+      }
+      this.insertSong(item)
     },
     getIconCls (item) {
       if (item.type === TYPE_SINGER) {
@@ -107,10 +121,11 @@ export default {
           type: TYPE_SINGER
         })
       }
-      if (data.song) {
-        ret = ret.concat(this._normalizegSons(data.song.list))
-      }
-      return ret
+      let songs = this._normalizegSons(data.song.list)
+      return processSongUrl(songs).then(songs => {
+        ret = ret.concat(songs)
+        return ret
+      })
     },
     _normalizegSons (list) {
       let ret = []
@@ -120,7 +135,11 @@ export default {
         }
       })
       return ret
-    }
+    },
+    ...mapMutations({
+      setSinger: 'SET_SINGER'
+    }),
+    ...mapActions(['insertSong'])
   }
 }
 </script>

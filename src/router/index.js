@@ -45,7 +45,13 @@ export default new Router({
     // 搜索
     {
       path: '/search',
-      component: () => import('components/search/search')
+      component: () => import('components/search/search'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('components/singer-detail/singer-detail')
+        }
+      ]
     }
   ]
 })
